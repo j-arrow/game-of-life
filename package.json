@@ -1,0 +1,11 @@
+{
+  "name": "game-of-life-js",
+  "version": "1.0.0",
+  "description": "Game of Life - JavaScript",
+  "main": "index.js",
+  "author": "jarrow",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
