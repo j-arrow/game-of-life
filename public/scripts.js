@@ -10,16 +10,21 @@ const gridCellControls = [];
 
 
 // logic
+const calculateWrap = (pos) => {
+	return pos >= GRID_DIMENSION ?
+		pos - GRID_DIMENSION : (pos < 0) ?
+			pos + GRID_DIMENSION : pos;
+}
+
 const createCellControl = (cellElement, row, col) => ({
 	kill: () => cellElement.removeAttribute('alive'),
 	reproduce: () => cellElement.setAttribute('alive', true),
 	isAlive: () => cellElement.getAttribute('alive'),
 	countAliveNeighbours: () => {
-		const minRow = Math.max(0, row-1);
-		const maxRow = Math.min(row+1, GRID_DIMENSION-1);
-
-		const minCol = Math.max(0, col-1);
-		const maxCol = Math.min(col+1, GRID_DIMENSION-1);
+		const minRow = row - 1;
+		const maxRow = row + 1;
+		const minCol = col - 1;
+		const maxCol = col + 1;
 
 		let neighboursAlive = 0;
 		for (let r = minRow; r <= maxRow; r++) {
@@ -27,7 +32,11 @@ const createCellControl = (cellElement, row, col) => ({
 				if (r === row && c === col) {
 					continue;
 				}
-				if (gridCellControls[r][c].isAlive()) {
+
+				const potentiallyWrappedR = calculateWrap(r);
+				const potentiallyWrappedC = calculateWrap(c);
+
+				if (gridCellControls[potentiallyWrappedR][potentiallyWrappedC].isAlive()) {
 					neighboursAlive++;
 				}
 			}
@@ -77,20 +86,8 @@ const init = () => {
 	resizeGrid();
 	fillGrid();
 
-	gridCellControls[35][35].reproduce();
-	gridCellControls[36][36].reproduce();
-	gridCellControls[37][34].reproduce();
-	gridCellControls[37][35].reproduce();
-	gridCellControls[37][36].reproduce();
-
-	gridCellControls[15][15].reproduce();
-	gridCellControls[16][16].reproduce();
-	gridCellControls[17][14].reproduce();
-	gridCellControls[17][15].reproduce();
-	gridCellControls[17][16].reproduce();
-
 	const t1 = performance.now();
-	console.debug(`Initialized: ${t1-t0}ms for ${GRID_DIMENSION}x${GRID_DIMENSION} grid`);
+	console.debug(`Initialized: ${t1 - t0}ms for ${GRID_DIMENSION}x${GRID_DIMENSION} grid`);
 };
 
 const tick = () => {
@@ -119,5 +116,5 @@ setInterval(() => {
 	const t0 = performance.now();
 	tick();
 	const t1 = performance.now();
-	console.debug(`Tick: ${++tickCount}, time processing: ${t1-t0}ms`);
+	console.debug(`Tick: ${++tickCount}, time processing: ${t1 - t0}ms`);
 }, 70);
