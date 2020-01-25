@@ -85,6 +85,7 @@ const init = () => {
 
 	resizeGrid();
 	fillGrid();
+	spawnSampleFleet();
 
 	const t1 = performance.now();
 	console.debug(`Initialized: ${t1 - t0}ms for ${GRID_DIMENSION}x${GRID_DIMENSION} grid`);
@@ -118,3 +119,41 @@ setInterval(() => {
 	const t1 = performance.now();
 	console.debug(`Tick: ${++tickCount}, time processing: ${t1 - t0}ms`);
 }, 70);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// samples
+function spawnSampleShip(row=0, col=row) {
+	gridCellControls[calculateWrap(row-2)][calculateWrap(col-2)].reproduce();
+	gridCellControls[calculateWrap(row-1)][calculateWrap(col-1)].reproduce();
+	gridCellControls[calculateWrap(row)][calculateWrap(col-3)].reproduce();
+	gridCellControls[calculateWrap(row)][calculateWrap(col-2)].reproduce();
+	gridCellControls[calculateWrap(row)][calculateWrap(col-1)].reproduce();
+};
+function spawnSampleFleet() {
+	spawnSampleShip();
+	spawnSampleShip(10);
+	spawnSampleShip(20);
+	spawnSampleShip(30);
+	spawnSampleShip(40);
+	spawnSampleShip(50);
+	spawnSampleShip(60);
+	spawnSampleShip(10, 60);
+	spawnSampleShip(20, 50);
+	spawnSampleShip(30, 40);
+	spawnSampleShip(40, 30);
+	spawnSampleShip(50, 20);
+	spawnSampleShip(60, 10);
+};
