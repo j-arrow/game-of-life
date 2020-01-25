@@ -3,7 +3,7 @@
 
 
 // constants
-const GRID_DIMENSION = 150;
+const GRID_DIMENSION = 70;
 const gridElement = document.getElementById('grid');
 const gridCellControls = [];
 
@@ -36,7 +36,8 @@ const createCellControl = (cellElement, row, col) => ({
 				const potentiallyWrappedR = calculateWrap(r);
 				const potentiallyWrappedC = calculateWrap(c);
 
-				if (gridCellControls[potentiallyWrappedR][potentiallyWrappedC].isAlive()) {
+				const neighbourCell = gridCellControls[potentiallyWrappedR][potentiallyWrappedC];
+				if (neighbourCell.isAlive()) {
 					neighboursAlive++;
 				}
 			}
