@@ -3,7 +3,7 @@
 
 
 // constants
-const GRID_DIMENSION = 70;
+const GRID_DIMENSION = 150;
 const gridElement = document.getElementById('grid');
 const gridCellControls = [];
 
@@ -113,12 +113,18 @@ const tick = () => {
 init();
 
 let tickCount = 0;
+const expectedTickTimeMs = 70;
 setInterval(() => {
 	const t0 = performance.now();
 	tick();
 	const t1 = performance.now();
-	console.debug(`Tick: ${++tickCount}, time processing: ${t1 - t0}ms`);
-}, 70);
+
+	const tickProcessingTimeMs = t1 - t0;
+	console.debug(`Tick: ${++tickCount}, time processing: ${tickProcessingTimeMs}ms`);
+	if (tickProcessingTimeMs > expectedTickTimeMs) {
+		console.error(`Tick processing time of ${expectedTickTimeMs} exceeded`);
+	}
+}, expectedTickTimeMs);
 
 
 
