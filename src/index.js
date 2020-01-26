@@ -1,9 +1,10 @@
 // Game of life
+import './styles.css';
 
 
 
 // constants
-const GRID_DIMENSION = 70;
+const GRID_DIMENSION = 100;
 const gridElement = document.getElementById('grid');
 const gridCellControls = [];
 
@@ -86,7 +87,8 @@ const init = () => {
 
 	resizeGrid();
 	fillGrid();
-	spawnSampleFleet();
+
+	spawnFireMan();
 
 	const t1 = performance.now();
 	console.debug(`Initialized: ${t1 - t0}ms for ${GRID_DIMENSION}x${GRID_DIMENSION} grid`);
@@ -114,7 +116,7 @@ const tick = () => {
 init();
 
 let tickCount = 0;
-const expectedTickTimeMs = 70;
+const expectedTickTimeMs = 50;
 setInterval(() => {
 	const t0 = performance.now();
 	tick();
@@ -123,7 +125,7 @@ setInterval(() => {
 	const tickProcessingTimeMs = t1 - t0;
 	console.debug(`Tick: ${++tickCount}, time processing: ${tickProcessingTimeMs}ms`);
 	if (tickProcessingTimeMs > expectedTickTimeMs) {
-		console.error(`Tick processing time of ${expectedTickTimeMs} exceeded`);
+		console.error(`Tick processing time of ${expectedTickTimeMs}ms exceeded`);
 	}
 }, expectedTickTimeMs);
 
@@ -164,3 +166,52 @@ function spawnSampleFleet() {
 	spawnSampleShip(50, 20);
 	spawnSampleShip(60, 10);
 };
+
+function spawnPulsarPeriod3(center) {
+	const step = (distanceFromCenter) => {
+		const lowerBound = center-4;
+		const upperBound = center+4;
+		for (let i = lowerBound; i <= upperBound; i++) {
+			if (Math.abs(center-i) > 1) {
+				const rowAndCol = center-distanceFromCenter;
+				const wrappedRowAndCol = calculateWrap(rowAndCol);
+				const wrappedI = calculateWrap(i);
+				gridCellControls[wrappedRowAndCol][wrappedI].reproduce();
+				gridCellControls[wrappedI][wrappedRowAndCol].reproduce();
+			}
+		}
+	};
+	step(-6);
+	step(-1);
+	step(1);
+	step(6);
+};
+
+// best for grid dimension > 100
+function spawnYourGod(row, col=row) {
+	gridCellControls[row-2][col-2].reproduce();
+	gridCellControls[row-2][col-1].reproduce();
+	gridCellControls[row-2][col+1].reproduce();
+	gridCellControls[row-2][col+2].reproduce();
+
+	gridCellControls[row-1][col-2].reproduce();
+	gridCellControls[row-1][col+2].reproduce();
+
+	gridCellControls[row][col-1].reproduce();
+	gridCellControls[row][col].reproduce();
+	gridCellControls[row][col+1].reproduce();
+
+	gridCellControls[row+1][col].reproduce();
+}
+
+// best for grid dimension > 100
+function spawnFireMan() {
+	spawnYourGod(40, 30);
+	spawnYourGod(40, 70);
+	spawnYourGod(60, 50);
+}
+
+function spawnNiceExplosion() {
+	spawnSampleShip();
+	spawnPulsarPeriod3(50);
+}
