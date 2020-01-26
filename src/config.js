@@ -1,2 +1,4 @@
-export const GRID_DIMENSION = 100;
-export const EXPECTED_TICK_TIME_MS = 30;
+export const getConfigurationContext = () => ({
+	getGridDimension: () => 100,
+	getTickRate: () => document.getElementById('tickRateRange').value
+});

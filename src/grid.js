@@ -1,12 +1,16 @@
-import { GRID_DIMENSION } from "./config";
+import { getConfigurationContext } from "./config";
 import { createCell } from "./cell";
+import { createSpawner } from "./spawners";
 
 const _createGridControl = (gridElement, cellControls) => ({
 	tick: () => {
+		const config = getConfigurationContext();
+		const gridDimension = config.getGridDimension();
+
 		const operationBuffer = [];
 
-		for (let row = 0; row < GRID_DIMENSION; row++) {
-			for (let col = 0; col < GRID_DIMENSION; col++) {
+		for (let row = 0; row < gridDimension; row++) {
+			for (let col = 0; col < gridDimension; col++) {
 				const cellControl = _controlCell(cellControls, row, col);
 
 				const aliveNeighboursCount = _countAliveNeighbours(cellControls, row, col);
@@ -19,11 +23,13 @@ const _createGridControl = (gridElement, cellControls) => ({
 				}
 			}
 		}
-	
+
 		operationBuffer.forEach(fn => fn());
 	},
-	// TODO
-	// createSpawner: () => ,
+	createSpawner: () => {
+		const cellControlProvider = (row, cell) => _controlCell(cellControls, row, cell);
+		return createSpawner(cellControlProvider);
+	},
 	resize: () => _resize(gridElement)
 });
 
@@ -52,17 +58,27 @@ const _countAliveNeighbours = (cellControls, row, col) => {
 const _controlCell = (cellControls, row, col) => cellControls[_calculateWrap(row)][_calculateWrap(col)];
 
 const _calculateWrap = (pos) => {
-	// TODO support division/multiplication by GRID_DIMENSION instead of subtraction/addition
-	return pos >= GRID_DIMENSION ?
-		pos % GRID_DIMENSION : (pos < 0) ?
-			pos + GRID_DIMENSION : pos;
+	const gridDimension = getConfigurationContext().getGridDimension();
+
+	const getFirstInGridIndicesIfTooSmall = () => {
+		let current = pos;
+		while (current < 0) {
+			current += gridDimension;
+		}
+		return current;
+	}
+
+	return pos >= gridDimension ?
+		pos % gridDimension : (pos < 0) ?
+			getFirstInGridIndicesIfTooSmall() : pos;
 };
 
 const _resize = (gridElement) => {
+	const gridDimension = getConfigurationContext().getGridDimension();
 	const minInner = Math.min(window.innerHeight, window.innerWidth);
 	const adjustedMinInner = Math.floor(minInner * 0.95);
 	gridElement.style = `
-		--grid-dimension: ${GRID_DIMENSION};
+		--grid-dimension: ${gridDimension};
 		--grid-size: ${adjustedMinInner}px;
 	`;
 };
@@ -70,15 +86,17 @@ const _resize = (gridElement) => {
 export const initGrid = () => {
 	const t0 = performance.now();
 
+	const gridDimension = getConfigurationContext().getGridDimension();
+
 	const gridElement = document.getElementById('grid');
 	_resize(gridElement);
 
 	const cellControls = [];
 
-	for (let r = 0; r < GRID_DIMENSION; r++) {
+	for (let r = 0; r < gridDimension; r++) {
 		const row = [];
 
-		for (let c = 0; c < GRID_DIMENSION; c++) {
+		for (let c = 0; c < gridDimension; c++) {
 			const cellControl = createCell();
 			cellControl.appendTo(gridElement);
 			row.push(cellControl);
@@ -90,7 +108,7 @@ export const initGrid = () => {
 	const gridControl = _createGridControl(gridElement, cellControls);
 
 	const t1 = performance.now();
-	console.debug(`Initialized: ${t1 - t0}ms for ${GRID_DIMENSION}x${GRID_DIMENSION} grid`);
+	console.debug(`Initialized: ${t1 - t0}ms for ${gridDimension}x${gridDimension} grid`);
 
 	window.addEventListener('resize', () => gridControl.resize());
 
