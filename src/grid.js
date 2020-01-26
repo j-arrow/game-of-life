@@ -68,6 +68,8 @@ const _resize = (gridElement) => {
 };
 
 export const initGrid = () => {
+	const t0 = performance.now();
+
 	const gridElement = document.getElementById('grid');
 	_resize(gridElement);
 
@@ -85,5 +87,12 @@ export const initGrid = () => {
 		cellControls.push(row);
 	}
 
-	return _createGridControl(gridElement, cellControls);
+	const gridControl = _createGridControl(gridElement, cellControls);
+
+	const t1 = performance.now();
+	console.debug(`Initialized: ${t1 - t0}ms for ${GRID_DIMENSION}x${GRID_DIMENSION} grid`);
+
+	window.addEventListener('resize', () => gridControl.resize());
+
+	return gridControl;
 };
