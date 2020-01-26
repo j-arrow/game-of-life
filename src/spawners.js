@@ -1,5 +1,3 @@
-import { calculateWrap } from "./utils";
-
 export const spawnSampleShip = (gridCellControls, row = 0, col = row) => {
 	gridCellControls[calculateWrap(row - 2)][calculateWrap(col - 2)].reproduce();
 	gridCellControls[calculateWrap(row - 1)][calculateWrap(col - 1)].reproduce();
