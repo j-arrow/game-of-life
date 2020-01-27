@@ -2,12 +2,13 @@
 import './styles.css';
 import { initGrid } from './grid';
 import { startSimulation } from './simulation';
-import { initSimulationControls } from './simulationControls';
+import { prepareConfigWindow } from './configWindow';
 
 const gridControl = initGrid();
 
 const spawner = gridControl.createSpawner();
-spawner.spawnFireMan();
+spawner.spawnSampleShip();
+spawner.spawnPulsarPeriod3(50);
 
 const simulationControl = startSimulation(gridControl);
-initSimulationControls(simulationControl);
+prepareConfigWindow(simulationControl);
