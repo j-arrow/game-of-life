@@ -6,12 +6,17 @@
 </head>
 
 <body>
-	<div id='grid'></div>
+	<canvas id='gridCanvas'></canvas>
 
-	<div id='configWindow'>
+	<div id='configControls'>
 		<button id='resumeBtn'>Resume</button>
 		<button id='pauseBtn'>Pause</button>
 		<input id='tickRateRange' type='range' min=30 max=300 value=70>
+
+		<label>
+			<input id='renderingEnabledCheckbox' type='checkbox' checked>
+			Render
+		</label>
 	</div>
 </body>
 

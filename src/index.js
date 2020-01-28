@@ -2,7 +2,7 @@
 import './styles.css';
 import { initGrid } from './grid';
 import { startSimulation } from './simulation';
-import { prepareConfigWindow } from './configWindow';
+import { prepareConfigControls } from './configControls';
 
 const gridControl = initGrid();
 
@@ -11,4 +11,4 @@ spawner.spawnSampleShip();
 spawner.spawnPulsarPeriod3(50);
 
 const simulationControl = startSimulation(gridControl);
-prepareConfigWindow(simulationControl);
+prepareConfigControls(simulationControl);
