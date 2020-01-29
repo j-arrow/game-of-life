@@ -1,4 +1,5 @@
 import { getConfigurationContext } from "./config";
+import { theme } from "./theme";
 
 export const spawnCell = (canvas, row, col) => {
 	let _alive = false;
@@ -18,17 +19,17 @@ export const spawnCell = (canvas, row, col) => {
 	return {
 		kill: () => {
 			_alive = false;
-			_paint(getConfigurationContext().getDeadCellColor());
+			_paint(theme.cell.dead);
 		},
 		reproduce: () => {
 			_alive = true;
-			_paint(getConfigurationContext().getAliveCellColor());
+			_paint(theme.cell.alive);
 		},
 		draw: () => {
 			if (_alive) {
-				_paint(getConfigurationContext().getAliveCellColor());
+				_paint(theme.cell.alive);
 			} else {
-				_paint(getConfigurationContext().getDeadCellColor());
+				_paint(theme.cell.dead);
 			}
 		},
 		isAlive: () => _alive
