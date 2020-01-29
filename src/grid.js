@@ -126,6 +126,7 @@ export const initGrid = () => {
 		gridControl.resize();
 		// redraw is required, because canvas is cleared on window resize
 		gridControl.redraw();
+		getConfigurationContext().log();
 	});
 
 	return gridControl;

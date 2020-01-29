@@ -1,15 +1,29 @@
 let context = undefined;
 export const getConfigurationContext = () => {
-	let _cellSize = 0 /* px */;
-
 	if (!context) {
+		let _cellSize = undefined /* px */;
+		let _tickRate = undefined /* ms */;
+		let _renderingEnabled = undefined;
+
+		const tickRateRange = document.getElementById('tickRateRange');
+		_tickRate = tickRateRange.value;
+		tickRateRange.addEventListener('change', (event) => {
+			_tickRate = event.target.value;
+		})
+
+		const renderingEnabledCheckbox = document.getElementById('renderingEnabledCheckbox');
+		_renderingEnabled = renderingEnabledCheckbox.checked;
+		renderingEnabledCheckbox.addEventListener('change', (event) => {
+			_renderingEnabled = event.target.checked;
+		})
+
 		context = {
-			getGridDimensions: () => 300 /* cells */,
+			getGridDimensions: () => 100 /* cells */,
 			getCellDimensions: () => _cellSize,
 			getAliveCellColor: () => '#DCDCDC',
 			getDeadCellColor: () => '#000000',
-			getTickRate: () => document.getElementById('tickRateRange').value /* ms */,
-			isRenderingEnabled: () => document.getElementById('renderingEnabledCheckbox').checked,
+			getTickRate: () => _tickRate,
+			isRenderingEnabled: () => _renderingEnabled,
 
 			notifyGridSizeChange: (gridSize) => {
 				const gridDimensions = context.getGridDimensions();
@@ -18,11 +32,19 @@ export const getConfigurationContext = () => {
 
 			addRenderingEnabledChangedListener: (callback) => {
 				const fn = (event) => callback(event.target.checked);
-				const checkbox = document.getElementById('renderingEnabledCheckbox');
-				checkbox.addEventListener('change', fn);
+				renderingEnabledCheckbox.addEventListener('change', fn);
 				return {
-					remove: () => checkbox.removeEventListener('change', fn),
+					remove: () => renderingEnabledCheckbox.removeEventListener('change', fn),
 				};
+			},
+
+			log: () => {
+				console.debug(' --- Config --- ');
+				console.debug('grid dimensions:', context.getGridDimensions());
+				console.debug('cell dimensions:', context.getCellDimensions());
+				console.debug('tick rate:', context.getTickRate());
+				console.debug('rendering enabled:', context.isRenderingEnabled());
+				console.debug(' -------------- ');
 			},
 		};
 	}
