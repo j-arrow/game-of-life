@@ -1,4 +1,4 @@
-import { getConfigurationContext } from "./config";
+import { config } from "./config";
 
 let _running = false;
 let _tickCount = 0;
@@ -28,7 +28,7 @@ const _createSimulationControl = (gridControl) => ({
 		const t1 = performance.now();
 
 		const tickProcessingTimeMs = t1 - t0;
-		const tickRate = getConfigurationContext().getTickRate();
+		const tickRate = config.getTickRate();
 		console.debug(`Tick: ${++_tickCount}, time processing: ${tickProcessingTimeMs}ms`);
 		if (tickProcessingTimeMs > tickRate) {
 			console.error(`Tick processing time of ${tickRate}ms exceeded`);
@@ -41,9 +41,9 @@ export const startSimulation = (gridControl) => {
 
 	const fn = () => {
 		simulationControl.tick();
-		setTimeout(fn, getConfigurationContext().getTickRate());
+		setTimeout(fn, config.getTickRate());
 	}
-	setTimeout(fn, getConfigurationContext().getTickRate());
+	setTimeout(fn, config.getTickRate());
 
 	return simulationControl;
 }

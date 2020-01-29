@@ -3,10 +3,10 @@ import './styles.css';
 import { initGrid } from './grid';
 import { startSimulation } from './simulation';
 import { prepareConfigControls } from './configControls';
-import { getConfigurationContext } from './config';
+import { config } from './config';
 
 const gridControl = initGrid();
-getConfigurationContext().log();
+config.log();
 
 const spawner = gridControl.createSpawner();
 spawner.spawnSampleShip();

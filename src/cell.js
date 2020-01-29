@@ -1,15 +1,15 @@
-import { getConfigurationContext } from "./config";
+import { config } from "./config";
 import { theme } from "./theme";
 
 export const spawnCell = (canvas, row, col) => {
 	let _alive = false;
 
 	const _paint = (color) => {
-		if (!getConfigurationContext().isRenderingEnabled()) {
+		if (!config.isRenderingEnabled()) {
 			return;
 		}
 
-		const cellDimensions = getConfigurationContext().getCellDimensions();
+		const cellDimensions = config.getCellDimensions();
 
 		const canvasContext = canvas.getContext('2d');
 		canvasContext.fillStyle = color;

@@ -1,4 +1,4 @@
-import { getConfigurationContext } from "./config";
+import { config } from "./config";
 import { spawnCell } from "./cell";
 import { createSpawner } from "./spawners";
 
@@ -28,7 +28,7 @@ const _createGridControl = (canvas, cellControls) => {
 	const _controlCell = (row, col) => cellControls[_calculateWrap(row)][_calculateWrap(col)];
 
 	const _calculateWrap = (pos) => {
-		const gridDimensions = getConfigurationContext().getGridDimensions();
+		const gridDimensions = config.getGridDimensions();
 
 		const getFirstInGridIndicesIfTooSmall = () => {
 			let current = pos;
@@ -89,13 +89,13 @@ const _resize = (canvas) => {
 	canvas.width = adjustedMinInner;
 	canvas.height = adjustedMinInner;
 
-	getConfigurationContext().notifyGridSizeChange(adjustedMinInner);
+	config.notifyGridSizeChange(adjustedMinInner);
 };
 
 export const initGrid = () => {
 	const t0 = performance.now();
 
-	const gridDimensions = getConfigurationContext().getGridDimensions();
+	const gridDimensions = config.getGridDimensions();
 
 	const canvas = document.getElementById('gridCanvas');
 	_resize(canvas);
@@ -117,7 +117,7 @@ export const initGrid = () => {
 	const t1 = performance.now();
 	console.debug(`Initialized: ${t1 - t0}ms for ${gridDimensions}x${gridDimensions} grid`);
 
-	getConfigurationContext().addRenderingEnabledChangedListener((renderingEnabled) => {
+	config.addRenderingEnabledChangedListener((renderingEnabled) => {
 		if (renderingEnabled) {
 			gridControl.redraw();
 		}
@@ -126,7 +126,7 @@ export const initGrid = () => {
 		gridControl.resize();
 		// redraw is required, because canvas is cleared on window resize
 		gridControl.redraw();
-		getConfigurationContext().log();
+		config.log();
 	});
 
 	return gridControl;
