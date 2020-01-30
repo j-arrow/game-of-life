@@ -18,8 +18,6 @@ export const config = (() => {
 	const instance = {
 		getGridDimensions: () => 100 /* cells */,
 		getCellDimensions: () => _cellSize,
-		getAliveCellColor: () => '#DCDCDC',
-		getDeadCellColor: () => '#000000',
 		getTickRate: () => _tickRate,
 		isRenderingEnabled: () => _renderingEnabled,
 

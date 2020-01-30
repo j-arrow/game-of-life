@@ -56,7 +56,7 @@ const _createGridControl = (canvas, cellControls) => {
 
 					if (alive && (aliveNeighboursCount < 2 || aliveNeighboursCount > 3)) {
 						operationBuffer.push(() => cellControl.kill()); // underpopulation or overpopulation
-					} else if (!alive && aliveNeighboursCount == 3) {
+					} else if (!alive && aliveNeighboursCount === 3) {
 						operationBuffer.push(() => cellControl.reproduce()); // reproduction
 					}
 				}
