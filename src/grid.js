@@ -25,21 +25,27 @@ const _createGridControl = (canvas, cellControls) => {
 		return neighboursAlive;
 	};
 
-	const _controlCell = (row, col) => cellControls[_calculateWrap(row)][_calculateWrap(col)];
+	const _controlCell = (row, col) => cellControls[_calculcateWidthHeight(row)][_calculcateWidthWidth(col)];
 
-	const _calculateWrap = (pos) => {
-		const gridDimensions = config.getGridDimensions();
+	const _calculcateWidthHeight = (pos) => {
+		return _calculateWrap(pos, config.getGridHeightInCells());
+	};
 
+	const _calculcateWidthWidth = (pos) => {
+		return _calculateWrap(pos, config.getGridWidthInCells());
+	};
+
+	const _calculateWrap = (pos, gridDimension) => {
 		const getFirstInGridIndicesIfTooSmall = () => {
 			let current = pos;
 			while (current < 0) {
-				current += gridDimensions;
+				current += gridDimension;
 			}
 			return current;
 		}
 
-		return pos >= gridDimensions ?
-			pos % gridDimensions : (pos < 0) ?
+		return pos >= gridDimension ?
+			pos % gridDimension : (pos < 0) ?
 				getFirstInGridIndicesIfTooSmall() : pos;
 	};
 
@@ -84,27 +90,34 @@ const _createGridControl = (canvas, cellControls) => {
 };
 
 const _resize = (canvas) => {
-	const minInner = Math.min(window.innerHeight, window.innerWidth);
-	const adjustedMinInner = Math.floor(minInner * 0.95);
-	canvas.width = adjustedMinInner;
-	canvas.height = adjustedMinInner;
+	// TODO move these calculation to config(-esque?)/calculator
+	const adjustedMinWidth = Math.floor(window.innerWidth * 0.95);
+	const requiredCellDimensionsInNewWidth = Math.floor(adjustedMinWidth / config.getGridWidthInCells());
 
-	config.notifyGridSizeChange(adjustedMinInner);
+	const adjustedMinHeight = Math.floor(window.innerHeight * 0.95);
+	const requiredCellDimensionsInNewHeight = Math.floor(adjustedMinHeight / config.getGridHeightInCells());
+
+	const lowerRequiredCellDimensions = Math.min(requiredCellDimensionsInNewWidth, requiredCellDimensionsInNewHeight);
+	config.notifyCellDimensionsChange(lowerRequiredCellDimensions);
+
+	canvas.width = lowerRequiredCellDimensions * config.getGridWidthInCells();
+	canvas.height = lowerRequiredCellDimensions * config.getGridHeightInCells();
 };
 
 export const initGrid = () => {
 	const t0 = performance.now();
 
-	const gridDimensions = config.getGridDimensions();
+	const gridWidth = config.getGridWidthInCells();
+	const gridHeight = config.getGridHeightInCells();
 
 	const canvas = document.getElementById('gridCanvas');
 	_resize(canvas);
 
 	const cellControls = [];
-	for (let r = 0; r < gridDimensions; r++) {
+	for (let r = 0; r < gridHeight; r++) {
 		const row = [];
 
-		for (let c = 0; c < gridDimensions; c++) {
+		for (let c = 0; c < gridWidth; c++) {
 			const cellControl = spawnCell(canvas, r, c);
 			row.push(cellControl);
 		}
@@ -115,7 +128,7 @@ export const initGrid = () => {
 	const gridControl = _createGridControl(canvas, cellControls);
 
 	const t1 = performance.now();
-	console.debug(`Initialized: ${t1 - t0}ms for ${gridDimensions}x${gridDimensions} grid`);
+	console.debug(`Initialized: ${t1 - t0}ms for ${gridWidth}x${gridHeight} grid`);
 
 	config.addRenderingEnabledChangedListener((renderingEnabled) => {
 		if (renderingEnabled) {
