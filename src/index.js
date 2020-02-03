@@ -5,12 +5,30 @@ import { startSimulation } from './simulation';
 import { prepareConfigControls } from './configControls';
 import { config } from './config';
 
-const gridControl = initGrid();
-config.log();
+const seed = `
+. . . . . . . . . . . . . . .
+. . . . . o o . . . . . . . .
+. . . . o o o o . . . . . . .
+. . . o . o o . o o . o . . .
+. . . . . . . . o o . . o . .
+. . . o o . . o o . . o o o .
+. . . o o o o . o . . o o o .
+. . o . . o . . . o . . o . .
+. o o o . . o . o o o o . . .
+. o o o . . o o . . o o . . .
+. . o . . o o . . . . . . . .
+. . . o . o o . o o . o . . .
+. . . . . . . o o o o . . . .
+. . . . . . . . o o . . . . .
+. . . . . . . . . . . . . . .
+`;
 
-const spawner = gridControl.createSpawner();
-spawner.spawnSampleShip();
-spawner.spawnPulsarPeriod3(50);
+const gridControl = initGrid({
+	seed,
+	gridHeightInCells: 100,
+	gridWidthInCells: 100,
+});
+config.log();
 
 const simulationControl = startSimulation(gridControl);
 prepareConfigControls(simulationControl);

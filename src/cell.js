@@ -1,8 +1,8 @@
 import { config } from "./config";
 import { theme } from "./theme";
 
-export const spawnCell = (canvas, row, col) => {
-	let _alive = false;
+export const spawnCell = (canvas, row, col, initialAlive = false) => {
+	let _alive = initialAlive;
 
 	const _paint = (color) => {
 		if (!config.isRenderingEnabled()) {

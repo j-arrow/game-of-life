@@ -1,8 +1,8 @@
 import { config } from "./config";
 import { spawnCell } from "./cell";
-import { createSpawner } from "./spawners";
+import { parse } from "./seedParser";
 
-const _createGridControl = (canvas, cellControls) => {
+const _createGridControl = (canvas, gridWidthInCells, gridHeightInCells, cellControls) => {
 	const _countAliveNeighbours = (row, col) => {
 		const minRow = row - 1;
 		const maxRow = row + 1;
@@ -25,14 +25,14 @@ const _createGridControl = (canvas, cellControls) => {
 		return neighboursAlive;
 	};
 
-	const _controlCell = (row, col) => cellControls[_calculcateWidthHeight(row)][_calculcateWidthWidth(col)];
+	const _controlCell = (row, col) => cellControls[_calculcateWidthWrap(row)][_calculateHeightWrap(col)];
 
-	const _calculcateWidthHeight = (pos) => {
-		return _calculateWrap(pos, config.getGridHeightInCells());
+	const _calculcateWidthWrap = (pos) => {
+		return _calculateWrap(pos, gridWidthInCells);
 	};
 
-	const _calculcateWidthWidth = (pos) => {
-		return _calculateWrap(pos, config.getGridWidthInCells());
+	const _calculateHeightWrap = (pos) => {
+		return _calculateWrap(pos, gridHeightInCells);
 	};
 
 	const _calculateWrap = (pos, gridDimension) => {
@@ -70,12 +70,8 @@ const _createGridControl = (canvas, cellControls) => {
 
 			operationBuffer.forEach(fn => fn());
 		},
-		createSpawner: () => {
-			const cellControlProvider = (row, cell) => _controlCell(row, cell);
-			return createSpawner(cellControlProvider);
-		},
 		resize: () => {
-			_resize(canvas);
+			_resize(canvas, gridWidthInCells, gridHeightInCells);
 		},
 		redraw: () => {
 			for (let r = 0; r < cellControls.length; r++) {
@@ -89,46 +85,70 @@ const _createGridControl = (canvas, cellControls) => {
 	return control;
 };
 
-const _resize = (canvas) => {
+const _resize = (canvas, gridWidthInCells, gridHeightInCells) => {
 	// TODO move these calculation to config(-esque?)/calculator
 	const adjustedMinWidth = Math.floor(window.innerWidth * 0.95);
-	const requiredCellDimensionsInNewWidth = Math.floor(adjustedMinWidth / config.getGridWidthInCells());
+	const requiredCellDimensionsInNewWidth = Math.floor(adjustedMinWidth / gridWidthInCells);
 
 	const adjustedMinHeight = Math.floor(window.innerHeight * 0.95);
-	const requiredCellDimensionsInNewHeight = Math.floor(adjustedMinHeight / config.getGridHeightInCells());
+	const requiredCellDimensionsInNewHeight = Math.floor(adjustedMinHeight / gridHeightInCells);
 
 	const lowerRequiredCellDimensions = Math.min(requiredCellDimensionsInNewWidth, requiredCellDimensionsInNewHeight);
 	config.notifyCellDimensionsChange(lowerRequiredCellDimensions);
 
-	canvas.width = lowerRequiredCellDimensions * config.getGridWidthInCells();
-	canvas.height = lowerRequiredCellDimensions * config.getGridHeightInCells();
+	canvas.width = lowerRequiredCellDimensions * gridWidthInCells;
+	canvas.height = lowerRequiredCellDimensions * gridHeightInCells;
 };
 
-export const initGrid = () => {
+export const defaultInitGridProps = {
+	seed: undefined,
+	gridWidthInCells: 100,
+	gridHeightInCells: 100,
+};
+
+const _spawnCells = (canvas, gridProps) => {
+	const cellControls = [];
+	if (gridProps.seed) {
+		const gridBase = parse(gridProps.seed, {
+			padHorizontallyTo: gridProps.gridWidthInCells,
+			padVerticallyTo: gridProps.gridHeightInCells,
+		});
+		gridBase.forEach((row, rowIndex) => {
+			const cellControlsRow = [];
+			row.forEach((cellAlive, colIndex) => {
+				const cellControl = spawnCell(canvas, rowIndex, colIndex, cellAlive);
+				cellControlsRow.push(cellControl);
+			});
+			cellControls.push(cellControlsRow);
+		})
+	} else {
+		for (let r = 0; r < gridProps.gridHeightInCells; r++) {
+			const row = [];
+			for (let c = 0; c < gridProps.gridWidthInCells; c++) {
+				const cellControl = spawnCell(canvas, r, c);
+				row.push(cellControl);
+			}
+			cellControls.push(row);
+		}
+	}
+	return cellControls;
+};
+
+export const initGrid = (props = defaultInitGridProps) => {
 	const t0 = performance.now();
 
-	const gridWidth = config.getGridWidthInCells();
-	const gridHeight = config.getGridHeightInCells();
-
 	const canvas = document.getElementById('gridCanvas');
-	_resize(canvas);
 
-	const cellControls = [];
-	for (let r = 0; r < gridHeight; r++) {
-		const row = [];
+	const cellControls = _spawnCells(canvas, props);
+	const gridWidthInCells = cellControls.length;
+	const gridHeightInCells = cellControls[0] ? cellControls[0].length : 0;
+	_resize(canvas, gridWidthInCells, gridHeightInCells);
 
-		for (let c = 0; c < gridWidth; c++) {
-			const cellControl = spawnCell(canvas, r, c);
-			row.push(cellControl);
-		}
-
-		cellControls.push(row);
-	}
-
-	const gridControl = _createGridControl(canvas, cellControls);
+	const gridControl = _createGridControl(canvas, gridWidthInCells, gridHeightInCells, cellControls);
+	gridControl.redraw();
 
 	const t1 = performance.now();
-	console.debug(`Initialized: ${t1 - t0}ms for ${gridWidth}x${gridHeight} grid`);
+	console.debug(`Initialized: ${t1 - t0}ms for ${gridWidthInCells}x${gridHeightInCells} grid`);
 
 	config.addRenderingEnabledChangedListener((renderingEnabled) => {
 		if (renderingEnabled) {

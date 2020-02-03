@@ -16,8 +16,6 @@ export const config = (() => {
 	})
 
 	const instance = {
-		getGridWidthInCells: () => 100,
-		getGridHeightInCells: () => 50,
 		getCellDimensions: () => _cellSize,
 		getTickRate: () => _tickRate,
 		isRenderingEnabled: () => _renderingEnabled,
@@ -35,12 +33,11 @@ export const config = (() => {
 		},
 
 		log: () => {
-			console.debug(' --- Config --- ');
-			console.debug('grid dimensions:', `${instance.getGridWidthInCells()}x${instance.getGridHeightInCells()}`);
-			console.debug('cell dimensions:', instance.getCellDimensions());
-			console.debug('tick rate:', instance.getTickRate());
-			console.debug('rendering enabled:', instance.isRenderingEnabled());
-			console.debug(' -------------- ');
+			console.debug('--- Config ---');
+			console.debug(`cell dimensions: ${instance.getCellDimensions()}px`);
+			console.debug(`tick rate: ${instance.getTickRate()}ms`);
+			console.debug(`rendering enabled: ${instance.isRenderingEnabled()}`);
+			console.debug('--------------');
 		},
 	};
 	return instance;
