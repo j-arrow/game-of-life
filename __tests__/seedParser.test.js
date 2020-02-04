@@ -73,6 +73,41 @@ test('parse - with padding smaller than seed size', () => {
 
 
 
+const zeroCharacterMultiplierSeed = `
+0o . o 3.
+`;
+
+test('parse - zero character multiplier used', () => {
+	expect(() => parse(zeroCharacterMultiplierSeed))
+		.toThrow(new Error('Seed could not be parsed. Make sure it uses only: \'o\' or \'.\' character optionally preceded by number not starting with 0'));
+});
+
+
+
+const zeroOneCharacterMultiplierSeed = `
+01. o 2.
+`;
+
+test('parse - "zero one" character multiplier used', () => {
+	expect(() => parse(zeroOneCharacterMultiplierSeed))
+		.toThrow(new Error('Seed could not be parsed. Make sure it uses only: \'o\' or \'.\' character optionally preceded by number not starting with 0'));
+});
+
+
+
+const unknownCharacterSeed = `
+w . .
+. o .
+. . o
+`;
+
+test('parse - parsing error, unknown character used', () => {
+	expect(() => parse(unknownCharacterSeed))
+		.toThrow(new Error('Seed could not be parsed. Make sure it uses only: \'o\' or \'.\' character optionally preceded by number not starting with 0'));
+});
+
+
+
 const complexSeed = `
 o
 .

@@ -12,9 +12,13 @@
 `
 */
 
+const CELL_ALIVE = 'o';
+const CELL_DEAD = '.';
+
 const defaultConf = {
 	padVerticallyTo: undefined,
 	padHorizontallyTo: undefined,
+	// FIXME find better way to measure execution time for performance tests
 	__test_includePerformance: false,
 }
 
@@ -38,13 +42,17 @@ export const parse = (seed, conf = defaultConf) => {
 
 		let rowLength = 0;
 		for (let c = 0; c < cols.length; c++) {
-			const [, countStr, char] = cols[c].match(/(\d+)?(.*)/);
+			const matchResult = cols[c].match(/^([1-9]\d*)?([o\.])$/);
+			if (!matchResult) {
+				throw new Error(`Seed could not be parsed. Make sure it uses only: '${CELL_ALIVE}' or '${CELL_DEAD}' character optionally preceded by number not starting with 0`);
+			}
+			const [, countStr, char] = matchResult;
 
 			const count = Number.parseInt(countStr) || 1;
 			rowLength += count;
 
 			for (let i = 1; i <= count; i++) {
-				rowCells.push(char === 'o');
+				rowCells.push(char === CELL_ALIVE);
 			}
 		}
 
