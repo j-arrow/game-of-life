@@ -32,6 +32,11 @@ export const spawnCell = (canvas, row, col, initialAlive = false) => {
 				_paint(theme.cell.dead);
 			}
 		},
+		// TODO this method can only return state: <2, 3 or >3 alive, it doesn't have to calculate
+		// all 8 neighbours, it can stop on 4 alive
+		calculateAliveNeighbours: () => {
+			
+		},
 		isAlive: () => _alive
 	};
 };

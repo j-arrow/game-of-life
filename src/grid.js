@@ -1,8 +1,12 @@
 import { config } from "./config";
-import { spawnCell } from "./cell";
 import { parse } from "./seedParser";
+import { AREA_HEIGHT, AREA_WIDTH, createAreaBuilder, createCompositeAreaBuilder } from "./area";
 
-const _createGridControl = (canvas, gridWidthInCells, gridHeightInCells, cellControls) => {
+const MIN_AREA_COUNT_EXPECTED = 3;
+const SPLIT_GRID_THRESHOLD_NODE_COUNT =
+	(AREA_WIDTH * MIN_AREA_COUNT_EXPECTED) * (AREA_HEIGHT * MIN_AREA_COUNT_EXPECTED);
+
+const _createGridControl = (canvas, gridWidthInCells, gridHeightInCells, areaControls) => {
 	const _countAliveNeighbours = (row, col) => {
 		const minRow = row - 1;
 		const maxRow = row + 1;
@@ -25,7 +29,9 @@ const _createGridControl = (canvas, gridWidthInCells, gridHeightInCells, cellCon
 		return neighboursAlive;
 	};
 
-	const _controlCell = (row, col) => cellControls[_calculcateWidthWrap(row)][_calculateHeightWrap(col)];
+	const _controlCell = (row, col) => {
+		return areaControls.controlCell(_calculcateWidthWrap(row), _calculateHeightWrap(col));
+	}
 
 	const _calculcateWidthWrap = (pos) => {
 		return _calculateWrap(pos, gridWidthInCells);
@@ -51,32 +57,16 @@ const _createGridControl = (canvas, gridWidthInCells, gridHeightInCells, cellCon
 
 	const control = {
 		tick: () => {
-			const operationBuffer = [];
-
-			for (let row = 0; row < cellControls.length; row++) {
-				for (let col = 0; col < cellControls[row].length; col++) {
-					const cellControl = _controlCell(row, col);
-
-					const aliveNeighboursCount = _countAliveNeighbours(row, col);
-					const alive = cellControl.isAlive();
-
-					if (alive && (aliveNeighboursCount < 2 || aliveNeighboursCount > 3)) {
-						operationBuffer.push(() => cellControl.kill()); // underpopulation or overpopulation
-					} else if (!alive && aliveNeighboursCount === 3) {
-						operationBuffer.push(() => cellControl.reproduce()); // reproduction
-					}
-				}
-			}
-
-			operationBuffer.forEach(fn => fn());
+			areaControls.process()
+				.forEach(executeOperation => executeOperation());
 		},
 		resize: () => {
 			_resize(canvas, gridWidthInCells, gridHeightInCells);
 		},
 		redraw: () => {
-			for (let r = 0; r < cellControls.length; r++) {
-				for (let c = 0; c < cellControls[r].length; c++) {
-					cellControls[r][c].draw();
+			for (let r = 0; r < areaControls.length; r++) {
+				for (let c = 0; c < areaControls[r].length; c++) {
+					areaControls[r][c].draw();
 				}
 			}
 		}
@@ -106,45 +96,58 @@ export const defaultInitGridProps = {
 	gridHeightInCells: 100,
 };
 
-const _spawnCells = (canvas, gridProps) => {
-	const cellControls = [];
-	if (gridProps.seed) {
-		const gridBase = parse(gridProps.seed, {
-			padHorizontallyTo: gridProps.gridWidthInCells,
-			padVerticallyTo: gridProps.gridHeightInCells,
-		});
-		gridBase.forEach((row, rowIndex) => {
-			const cellControlsRow = [];
-			row.forEach((cellAlive, colIndex) => {
-				const cellControl = spawnCell(canvas, rowIndex, colIndex, cellAlive);
-				cellControlsRow.push(cellControl);
-			});
-			cellControls.push(cellControlsRow);
-		})
-	} else {
-		for (let r = 0; r < gridProps.gridHeightInCells; r++) {
-			const row = [];
-			for (let c = 0; c < gridProps.gridWidthInCells; c++) {
-				const cellControl = spawnCell(canvas, r, c);
-				row.push(cellControl);
-			}
-			cellControls.push(row);
+const _prepareAreas = (canvas, gridProps) => {
+	// const cellControls = [];
+	// if (gridProps.seed) {
+	// 	const gridBase = parse(gridProps.seed, {
+	// 		padHorizontallyTo: gridProps.gridWidthInCells,
+	// 		padVerticallyTo: gridProps.gridHeightInCells,
+	// 	});
+	// 	gridBase.forEach((row, rowIndex) => {
+	// 		const cellControlsRow = [];
+	// 		row.forEach((cellAlive, colIndex) => {
+	// 			const cellControl = spawnCell(canvas, rowIndex, colIndex, cellAlive);
+	// 			cellControlsRow.push(cellControl);
+	// 		});
+	// 		cellControls.push(cellControlsRow);
+	// 	})
+	// } else {
+	const splitIntoMultipleAreas = SPLIT_GRID_THRESHOLD_NODE_COUNT
+		> (gridProps.gridWidthInCells * gridProps.gridHeightInCells);
+
+	const areaBuilder = splitIntoMultipleAreas ?
+		createCompositeAreaBuilder(canvas) :
+		createAreaBuilder(
+			canvas,
+			gridProps.gridHeightInCells,
+			gridProps.gridWidthInCells
+		);
+	for (let r = 0; r < gridProps.gridHeightInCells; r++) {
+		for (let c = 0; c < gridProps.gridWidthInCells; c++) {
+			areaBuilder.registerCell(r, c);
 		}
 	}
-	return cellControls;
+	return areaBuilder.build();
+	// }
+	// return cellControls;
 };
 
-export const initGrid = (props = defaultInitGridProps) => {
+export const initGrid = (gridProps = defaultInitGridProps) => {
+	const props = {
+		...defaultInitGridProps,
+		...gridProps,
+	};
+
 	const t0 = performance.now();
 
 	const canvas = document.getElementById('gridCanvas');
 
-	const cellControls = _spawnCells(canvas, props);
-	const gridWidthInCells = cellControls.length;
-	const gridHeightInCells = cellControls[0] ? cellControls[0].length : 0;
+	const areaControls = _prepareAreas(canvas, props);
+	const gridWidthInCells = props.gridWidthInCells;
+	const gridHeightInCells = props.gridHeightInCells;
 	_resize(canvas, gridWidthInCells, gridHeightInCells);
 
-	const gridControl = _createGridControl(canvas, gridWidthInCells, gridHeightInCells, cellControls);
+	const gridControl = _createGridControl(canvas, gridWidthInCells, gridHeightInCells, areaControls);
 	gridControl.redraw();
 
 	const t1 = performance.now();
